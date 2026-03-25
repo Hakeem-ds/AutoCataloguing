@@ -1,0 +1,26 @@
+{
+  "timestamp": 1772033277.4160352,
+  "pipeline_version": "v1.1",
+  "best": {
+    "name": "svm_linear_tfidf",
+    "run_id": "be7948775d474298b19aa67fbc756ab9",
+    "model_uri": "runs:/be7948775d474298b19aa67fbc756ab9/model",
+    "fit_time_sec": 18.174486875534058,
+    "predict_time_sec": Infinity,
+    "accuracy": 0.8090909090909091,
+    "macro_f1": 0.49258668525869087,
+    "weighted_f1": 0.7768127307412114
+  },
+  "candidates": [
+    {
+      "name": "svm_linear_tfidf",
+      "run_id": "be7948775d474298b19aa67fbc756ab9",
+      "model_uri": "runs:/be7948775d474298b19aa67fbc756ab9/model",
+      "fit_time_sec": 18.174486875534058,
+      "predict_time_sec": Infinity,
+      "accuracy": 0.8090909090909091,
+      "macro_f1": 0.49258668525869087,
+      "weighted_f1": 0.7768127307412114
+    }
+  ]
+}

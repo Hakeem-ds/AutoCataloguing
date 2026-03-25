@@ -1,0 +1,32 @@
+# config.yaml
+experiment: "/Users/hakeemfujah@tfl.gov.uk/experiments/ac_model"
+pipeline_version: "v1.1"
+
+data:
+  wholly_amalgamated: "/Workspace/Users/hakeemfujah@tfl.gov.uk/Corporate Archives/Autoclassification Scheme/Wholly Amalgamated Series Draft 07.01.2025.xlsx"
+  split_series: "/Workspace/Users/hakeemfujah@tfl.gov.uk/Corporate Archives/Autoclassification Scheme/Split Series Content 07.01.2025.xlsx"
+
+split:
+  test_size: 0.2
+  seed: 42
+
+models:
+  - name: "svm_linear_tfidf"
+    type: "svm_linear_tfidf"   # understood by train.py
+    params:
+      tfidf:
+        ngram_range: [1, 2]
+        min_df: 2
+        max_df: 0.95
+        sublinear_tf: true
+        norm: "l2"
+      svm:
+        C: 10.0
+        class_weight: "balanced"
+        max_iter: 10000
+      calibration:
+        enabled: true
+        method: "sigmoid"
+        cv_folds: 2
+        shuffle: true
+        seed: 42
