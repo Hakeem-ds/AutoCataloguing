@@ -1,0 +1,11 @@
+**/__pycache__/
+**/*.pyc
+**/.ipynb_checkpoints/
+**/*.ipynb
+.git/
+**/.env
+**/.env.local
+**/.env.*.local
+**/bootstrap_training_data.csv
+**/training_data.csv
+**/feedback.csv

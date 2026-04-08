@@ -1,0 +1,10 @@
+[server]
+port = 8000
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+maxUploadSize = 200
+maxMessageSize = 200
+
+[browser]
+gatherUsageStats = false

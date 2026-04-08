@@ -1,0 +1,8 @@
+command:
+  - streamlit
+  - run
+  - main.py
+  - --server.enableXsrfProtection
+  - "false"
+  - --server.enableCORS
+  - "false"

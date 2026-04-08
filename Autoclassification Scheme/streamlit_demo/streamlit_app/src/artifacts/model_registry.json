@@ -1,0 +1,20 @@
+{
+  "__meta__": {
+    "promoted": "ac_v001"
+  },
+  "ac_v001": {
+    "mlflow_model_uri": "runs:/60a4472210f0427ab728b08f192c3360/model",
+    "trained_on": "20260325_151309",
+    "notes": "Auto-discovered from MLflow (fresh)",
+    "pipeline_version": "v3.0",
+    "folder_name_map": "/Workspace/Users/hakeemfujah@tfl.gov.uk/Corporate Archives/Autoclassification Scheme/streamlit_demo/streamlit_app/src/artifacts/folder_name_map.json",
+    "parent_run_id": "27a0e59f3a2c493c80af2522550bdc42",
+    "best_model_run_id": "60a4472210f0427ab728b08f192c3360",
+    "accuracy": 0.8271,
+    "f1_macro": 0.537,
+    "n_samples": 3399,
+    "n_classes": 233,
+    "label_normalisation": "taxonomy_v3.0",
+    "classes_before_norm": 237
+  }
+}

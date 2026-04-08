@@ -1,0 +1,6 @@
+resources:
+  apps:
+    archive-doc-classifier:
+      name: archive-doc-classifier
+      description: "Document folder classification — Corporate Archives"
+      source_code_path: ./src

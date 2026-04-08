@@ -1,0 +1,24 @@
+services:
+  archive-classifier:
+    build:
+      context: "./Autoclassification Scheme/streamlit_demo/streamlit_app"
+      dockerfile: Dockerfile
+    container_name: archive-doc-classifier
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABRICKS_HOST=${DATABRICKS_HOST}
+      - DATABRICKS_TOKEN=${DATABRICKS_TOKEN}
+      - MLFLOW_TRACKING_URI=databricks
+      - MLFLOW_EXPERIMENT=/Users/hakeemfujah@tfl.gov.uk/experiments/ac_model_v2
+      - TRAINING_JOB_ID=${TRAINING_JOB_ID}
+    volumes:
+      # Persist feedback and registry across restarts
+      - ./data/artifacts:/app/src/artifacts
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen(\"http://localhost:8000/_stcore/health\")"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s

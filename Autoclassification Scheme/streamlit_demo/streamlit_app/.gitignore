@@ -1,0 +1,62 @@
+# Environment and secrets
+src/.env
+src/.env.local
+src/.env.*.local
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Models and artifacts (regenerable, large files)
+src/models/
+# Ignore artifact contents, but track essential files for Streamlit Cloud
+src/artifacts/*
+!src/artifacts/folder_name_map.json
+!src/artifacts/model_registry.json
+!src/artifacts/label_map.json
+!src/artifacts/folder_mapping.csv
+
+# Databricks
+.databricks/
+.databricks-connect
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+.cache/
+

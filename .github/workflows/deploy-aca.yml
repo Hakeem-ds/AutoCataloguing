@@ -1,0 +1,120 @@
+# ============================================================
+# GitHub Actions — Deploy Archive Classifier to Azure Container Apps
+#
+# Triggers on push to main branch.
+# Auth: OIDC federated identity (no client secret to rotate).
+# One-time setup (via Azure Cloud Shell):
+#   1. Create app registration + federated credential
+#   2. Create Azure resources (ACR, Container App)
+#   3. Store IDs as GitHub secrets
+# See notebook cell "ACA One-Time Setup" for commands.
+# ============================================================
+
+name: Deploy to Azure Container Apps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Autoclassification Scheme/streamlit_demo/streamlit_app/**'
+      - 'deploy/**'
+      - '.github/workflows/deploy-aca.yml'
+  workflow_dispatch:  # manual trigger from GitHub UI
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  RESOURCE_GROUP: rg-archive-classifier
+  LOCATION: uksouth
+  ACR_NAME: acrarchivedocs
+  APP_NAME: archive-doc-classifier
+  ENV_NAME: aca-env-archive
+  IMAGE_TAG: ${{ github.sha }}
+
+permissions:
+  id-token: write   # Required for OIDC federated identity
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # ── 1. Checkout code ──
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── 2. Azure Login (OIDC — no secret needed, token exchanged) ──
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # ── 3. Build image in ACR (cloud build — no Docker needed) ──
+      - name: Build and push to ACR
+        run: |
+          az acr build \
+            --registry ${{ env.ACR_NAME }} \
+            --image ${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} \
+            --image ${{ env.APP_NAME }}:latest \
+            --file "Autoclassification Scheme/streamlit_demo/streamlit_app/Dockerfile" \
+            "Autoclassification Scheme/streamlit_demo/streamlit_app"
+
+      # ── 4. Deploy / update Container App ──
+      - name: Deploy to Container Apps
+        run: |
+          # Check if app already exists
+          APP_EXISTS=$(az containerapp show \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "name" -o tsv 2>/dev/null || echo "")
+
+          if [ -z "$APP_EXISTS" ]; then
+            echo "Creating new container app..."
+            ACR_USER=$(az acr credential show -n ${{ env.ACR_NAME }} --query username -o tsv)
+            ACR_PASS=$(az acr credential show -n ${{ env.ACR_NAME }} --query 'passwords[0].value' -o tsv)
+
+            az containerapp create \
+              --name ${{ env.APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --environment ${{ env.ENV_NAME }} \
+              --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }} \
+              --registry-server ${{ env.ACR_NAME }}.azurecr.io \
+              --registry-username "$ACR_USER" \
+              --registry-password "$ACR_PASS" \
+              --target-port 8000 \
+              --ingress external \
+              --min-replicas 0 \
+              --max-replicas 2 \
+              --cpu 0.5 \
+              --memory 1.0Gi \
+              --secrets \
+                "databricks-host=${{ secrets.DATABRICKS_HOST }}" \
+                "databricks-token=${{ secrets.DATABRICKS_TOKEN }}" \
+                "training-job-id=${{ secrets.TRAINING_JOB_ID }}" \
+              --env-vars \
+                "DATABRICKS_HOST=secretref:databricks-host" \
+                "DATABRICKS_TOKEN=secretref:databricks-token" \
+                "MLFLOW_TRACKING_URI=databricks" \
+                "MLFLOW_EXPERIMENT=${{ secrets.MLFLOW_EXPERIMENT }}" \
+                "TRAINING_JOB_ID=secretref:training-job-id"
+          else
+            echo "Updating existing container app..."
+            az containerapp update \
+              --name ${{ env.APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image ${{ env.ACR_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}
+          fi
+
+      # ── 5. Print app URL ──
+      - name: Get app URL
+        run: |
+          FQDN=$(az containerapp show \
+            --name ${{ env.APP_NAME }} \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --query "properties.configuration.ingress.fqdn" \
+            -o tsv)
+          echo "::notice::App deployed to https://${FQDN}"
+          echo "## ✅ Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** https://${FQDN}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ${{ env.ACR_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ env.IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY

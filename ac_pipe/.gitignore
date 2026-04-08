@@ -1,0 +1,19 @@
+# Output artifacts (generated at runtime)
+outputs/
+
+# MLflow temp artifacts
+.mlflow_tmp_artifacts/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Databricks
+.databricks/

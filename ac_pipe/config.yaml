@@ -1,0 +1,28 @@
+# config.yaml — Retraining pipeline configuration
+experiment: "/Users/hakeemfujah@tfl.gov.uk/experiments/ac_model_v2"
+pipeline_version: "v3.0"
+
+split:
+  test_size: 0.2
+  seed: 42
+
+models:
+  - name: "svm_linear_tfidf"
+    type: "svm_linear_tfidf"
+    params:
+      tfidf:
+        ngram_range: [1, 2]
+        min_df: 2
+        max_df: 0.95
+        sublinear_tf: true
+        norm: "l2"
+      svm:
+        C: 10.0
+        class_weight: "balanced"
+        max_iter: 10000
+      calibration:
+        enabled: true
+        method: "sigmoid"
+        cv_folds: 3
+        shuffle: true
+        seed: 42

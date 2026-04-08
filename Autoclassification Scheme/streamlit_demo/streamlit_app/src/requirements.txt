@@ -1,0 +1,14 @@
+# Archive Classifier — Streamlit Cloud compatible
+# Python 3.10 specified in .python-version
+setuptools>=69.0.0,<82.0.0
+streamlit==1.42.0
+mlflow-skinny==2.9.2
+scikit-learn==1.2.2
+cloudpickle==3.1.1
+pandas==2.2.3
+numpy==1.26.4
+nltk==3.9.1
+python-dotenv==1.0.1
+pyyaml==6.0.2
+requests==2.32.3
+openpyxl>=3.1.0

@@ -1,0 +1,6 @@
+# Extra dependencies beyond Databricks Runtime 14.3 ML
+# sklearn, mlflow, pandas, numpy, matplotlib, pyyaml are pre-installed.
+
+openpyxl>=3.1.0        # Excel loading (ingestion/loader.py)
+spacy>=3.5.0           # Lemmatization (ingestion/preprocessing.py)
+pyarrow>=10.0.1        # MLflow artifact I/O

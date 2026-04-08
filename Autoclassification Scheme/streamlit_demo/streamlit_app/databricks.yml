@@ -1,0 +1,8 @@
+bundle:
+  name: archive-doc-classifier
+
+workspace:
+  host: https://adb-2223129477745111.11.azuredatabricks.net
+
+include:
+  - resources/*.yml

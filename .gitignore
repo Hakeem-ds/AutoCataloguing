@@ -1,0 +1,88 @@
+# ============================================================
+# Corporate Archives — Root .gitignore
+# Sub-projects (ac_pipe/, streamlit_app/) have their own .gitignore
+# This root file provides the safety net for the entire repo.
+# ============================================================
+
+# --- Data (training data, feedback, raw inputs) ---
+data/
+*.csv
+*.tsv
+*.parquet
+*.xlsx
+*.xls
+
+# --- Binary model files ---
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.onnx
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# --- Generated outputs & runtime artifacts ---
+outputs/
+models/
+artifacts/*
+.mlflow_tmp_artifacts/
+mlruns/
+
+# --- Exceptions: files inside artifacts/ that MUST be tracked ---
+# The pipeline's co-located taxonomy JSON is required on serverless compute.
+!ac_pipe/artifacts/
+!ac_pipe/artifacts/folder_name_map.json
+# The Streamlit app's runtime artifacts (training data, feedback, registry)
+!**/streamlit_app/src/artifacts/
+!**/streamlit_app/src/artifacts/*.json
+!**/streamlit_app/src/artifacts/*.csv
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+venv/
+env/
+.venv/
+
+# --- Secrets and environment ---
+.env
+.env.*
+!.env.example
+!.env.aca.example
+
+# --- Databricks ---
+.databricks/
+.databricks-connect
+.ipynb_checkpoints/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# --- Logs, temp, cache ---
+*.log
+*.tmp
+*.bak
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Generated images ---
+*.png
+*.jpg
+*.jpeg

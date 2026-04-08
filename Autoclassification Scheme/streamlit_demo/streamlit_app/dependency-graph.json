@@ -1,0 +1,566 @@
+{
+  "_meta": {
+    "generated": "2026-03-24",
+    "version": "1.2",
+    "description": "Module and artifact dependency graph for the Corporate Archives Auto-Classification system. Use for impact analysis: if you change module X, check which modules import it and which artifacts it touches.",
+    "module_count": 19,
+    "artifact_count": 8,
+    "cleanup": "v1.1 removed 9 dead files (685 lines). See 'removed' section. v1.2 adds training_metadata module, auto-retrain system, ac_vNNN naming."
+  },
+  "modules": {
+    "core/config.py": {
+      "type": "leaf",
+      "imports": [],
+      "reads": [],
+      "writes": [],
+      "config_keys_defined": [
+        "app_root",
+        "artifacts_dir",
+        "models_dir",
+        "versioned_models_dir",
+        "folder_name_map",
+        "folder_mapping_csv",
+        "label_map_json",
+        "feedback_csv",
+        "training_data_csv",
+        "model_registry_json",
+        "databricks_host",
+        "databricks_token",
+        "training_job_id",
+        "mlflow_experiment",
+        "mlflow_tracking_uri",
+        "confidence_bands",
+        "retention_max_versions",
+        "training_metadata_json",
+        "retrain_settings"
+      ]
+    },
+    "core/file_utils.py": {
+      "type": "leaf",
+      "imports": [],
+      "reads": [],
+      "writes": [],
+      "functions": [
+        "atomic_write",
+        "safe_rerun",
+        "ensure_file_exists",
+        "append_csv_row",
+        "load_csv_or_excel"
+      ]
+    },
+    "core/text_cleaning.py": {
+      "type": "leaf",
+      "imports": [],
+      "reads": [],
+      "writes": [],
+      "external_deps": [
+        "nltk"
+      ],
+      "functions": [
+        "clean_text",
+        "is_rubbish"
+      ]
+    },
+    "core/pipeline_utils.py": {
+      "type": "leaf",
+      "imports": [],
+      "reads": [],
+      "writes": [],
+      "functions": [
+        "select_text_column"
+      ],
+      "notes": "Deserialization shim: imported by main.py with # noqa: F401 to keep select_text_column in module namespace for loading older pickled models. 6 lines. Do not remove without testing all active model versions load correctly."
+    },
+    "core/databricks_job.py": {
+      "type": "core",
+      "imports": [
+        "core/config.py"
+      ],
+      "reads": [],
+      "writes": [],
+      "config_keys_used": [
+        "databricks_host",
+        "databricks_token",
+        "training_job_id"
+      ],
+      "functions": [
+        "trigger_training_job",
+        "wait_for_job"
+      ]
+    },
+    "core/label_map.py": {
+      "type": "core",
+      "imports": [
+        "core/config.py",
+        "core/file_utils.py"
+      ],
+      "reads": [
+        "label_map.json",
+        "folder_name_map.json"
+      ],
+      "writes": [
+        "label_map.json"
+      ],
+      "config_keys_used": [
+        "label_map_json",
+        "folder_name_map"
+      ],
+      "functions": [
+        "normalize_sys_id",
+        "resolve_hierarchical_sys_id",
+        "load_label_map",
+        "save_label_map",
+        "register_sys_id",
+        "resolve_to_sys_id",
+        "is_unseen_sys_id",
+        "load_folder_name_map"
+      ]
+    },
+    "core/feedback.py": {
+      "type": "core",
+      "imports": [
+        "core/config.py",
+        "core/label_map.py"
+      ],
+      "reads": [
+        "feedback.csv"
+      ],
+      "writes": [
+        "feedback.csv"
+      ],
+      "config_keys_used": [
+        "feedback_csv"
+      ],
+      "functions": [
+        "load_feedback",
+        "append_feedback_rows",
+        "deduplicate_feedback"
+      ]
+    },
+    "core/model_registry.py": {
+      "type": "core",
+      "imports": [
+        "core/config.py",
+        "core/label_map.py",
+        "core/file_utils.py",
+        "core/training_metadata.py"
+      ],
+      "reads": [
+        "model_registry.json",
+        "folder_name_map.json",
+        "folder_mapping.csv"
+      ],
+      "writes": [
+        "model_registry.json"
+      ],
+      "external_deps": [
+        "mlflow"
+      ],
+      "config_keys_used": [
+        "model_registry_json",
+        "folder_name_map",
+        "folder_mapping_csv",
+        "mlflow_experiment",
+        "retention_max_versions"
+      ],
+      "functions": [
+        "get_model_registry",
+        "save_model_registry",
+        "get_promoted_version",
+        "set_promoted_version",
+        "list_model_versions",
+        "get_current_model_version",
+        "enforce_retention",
+        "load_model_by_version",
+        "sync_from_mlflow"
+      ],
+      "notes": "sync_from_mlflow() now uses ac_vNNN naming via training_metadata.next_version_name(). 432 lines."
+    },
+    "core/model_loader.py": {
+      "type": "core",
+      "imports": [
+        "core/model_registry.py"
+      ],
+      "reads": [],
+      "writes": [],
+      "notes": "Uses @st.cache_resource for model caching",
+      "functions": [
+        "load_current_model",
+        "load_model_for_version",
+        "clear_model_caches"
+      ]
+    },
+    "core/prediction.py": {
+      "type": "core",
+      "imports": [
+        "core/label_map.py",
+        "core/text_cleaning.py",
+        "core/config.py"
+      ],
+      "reads": [],
+      "writes": [],
+      "config_keys_used": [
+        "confidence_bands"
+      ],
+      "functions": [
+        "_confidence_from_model",
+        "_resolve_folder_name",
+        "_classify_confidence",
+        "_build_sibling_map",
+        "_classify_relationship",
+        "get_related_context",
+        "predict_single",
+        "predict_batch_df"
+      ]
+    },
+    "core/training_data.py": {
+      "type": "core",
+      "imports": [
+        "core/config.py",
+        "core/feedback.py",
+        "core/label_map.py",
+        "core/model_loader.py",
+        "core/databricks_job.py",
+        "core/model_registry.py",
+        "core/training_metadata.py"
+      ],
+      "reads": [
+        "feedback.csv",
+        "training_data.csv"
+      ],
+      "writes": [
+        "training_data.csv"
+      ],
+      "external_deps": [
+        "mlflow"
+      ],
+      "config_keys_used": [
+        "training_data_csv",
+        "mlflow_experiment"
+      ],
+      "functions": [
+        "build_training_from_feedback",
+        "append_training_rows",
+        "enqueue_training_data_as_mlflow_artifact",
+        "run_retraining_mlflow_via_job",
+        "clear_feedback_and_training",
+        "_register_new_model_version"
+      ],
+      "notes": "Run_retraining now: acquires lock, triggers job, registers ac_vNNN version, auto-compares, auto-promotes if improved, logs retrain event. 428 lines."
+    },
+    "pages/1_predict.py": {
+      "type": "page",
+      "imports": [
+        "core/prediction.py",
+        "core/feedback.py",
+        "core/model_loader.py",
+        "core/model_registry.py",
+        "core/label_map.py",
+        "core/file_utils.py",
+        "core/config.py"
+      ],
+      "reads": [],
+      "writes": [],
+      "notes": "Single prediction, batch prediction, corrections. Confidence threshold presets in sidebar."
+    },
+    "pages/2_diagnostics.py": {
+      "type": "page",
+      "imports": [
+        "core/prediction.py",
+        "core/feedback.py",
+        "core/model_loader.py",
+        "core/model_registry.py",
+        "core/label_map.py",
+        "core/file_utils.py"
+      ],
+      "reads": [],
+      "writes": [],
+      "notes": "Label audit, unseen SysIDs, evaluation."
+    },
+    "pages/3_label_map_manager.py": {
+      "type": "page",
+      "imports": [
+        "core/label_map.py",
+        "core/file_utils.py",
+        "core/config.py"
+      ],
+      "reads": [
+        "folder_name_map.json",
+        "taxonomy_audit_log.csv"
+      ],
+      "writes": [
+        "folder_name_map.json",
+        "folder_mapping.csv",
+        "taxonomy_audit_log.csv"
+      ],
+      "config_keys_used": [
+        "folder_name_map",
+        "artifacts_dir"
+      ]
+    },
+    "pages/4_review_and_retrain.py": {
+      "type": "page",
+      "imports": [
+        "core/training_data.py",
+        "core/feedback.py",
+        "core/file_utils.py",
+        "core/config.py",
+        "core/model_loader.py",
+        "core/training_metadata.py"
+      ],
+      "reads": [
+        "training_data.csv",
+        "feedback.csv"
+      ],
+      "writes": [],
+      "config_keys_used": [
+        "training_data_csv"
+      ],
+      "notes": "Retrain Advisory dashboard: corrections counter, threshold bar, retrain history. 460 lines."
+    },
+    "pages/5_model_versions.py": {
+      "type": "page",
+      "imports": [
+        "core/model_registry.py",
+        "core/model_loader.py",
+        "core/file_utils.py",
+        "core/config.py",
+        "core/label_map.py"
+      ],
+      "reads": [],
+      "writes": [],
+      "external_deps": [
+        "mlflow"
+      ],
+      "notes": "Compare versions, promote, sync, smoke test, model card."
+    },
+    "ac_pipe/main.py": {
+      "type": "pipeline",
+      "imports": [
+        "ac_pipe/training/train.py",
+        "ac_pipe/training/evaluation.py",
+        "ac_pipe/utils/mlflow_io.py"
+      ],
+      "reads": [
+        "training_data.csv"
+      ],
+      "writes": [],
+      "external_deps": [
+        "mlflow",
+        "sklearn",
+        "pandas"
+      ]
+    },
+    "ac_pipe/training/train.py": {
+      "type": "pipeline",
+      "imports": [],
+      "reads": [],
+      "writes": [],
+      "external_deps": [
+        "mlflow",
+        "sklearn",
+        "numpy",
+        "pandas"
+      ],
+      "notes": "TF-IDF + LinearSVC + CalibratedClassifierCV. Canonical training code (single source of truth)."
+    },
+    "ac_pipe/training/evaluation.py": {
+      "type": "pipeline",
+      "imports": [],
+      "reads": [],
+      "writes": [],
+      "external_deps": [
+        "mlflow",
+        "numpy",
+        "matplotlib"
+      ],
+      "notes": "Logs accuracy, F1, classification_report, eval_summary to MLflow."
+    },
+    "core/training_metadata.py": {
+      "type": "core",
+      "imports": [
+        "core/config.py",
+        "core/file_utils.py",
+        "core/feedback.py"
+      ],
+      "reads": [
+        "training_metadata.json"
+      ],
+      "writes": [
+        "training_metadata.json"
+      ],
+      "config_keys_used": [
+        "training_metadata_json",
+        "retrain_settings"
+      ],
+      "functions": [
+        "get_metadata",
+        "save_metadata",
+        "init_metadata",
+        "next_version_name",
+        "peek_next_version_name",
+        "get_corrections_since_last_retrain",
+        "get_retrain_status",
+        "compute_next_threshold",
+        "acquire_lock",
+        "release_lock",
+        "is_locked",
+        "log_retrain_event",
+        "should_auto_promote"
+      ],
+      "notes": "Training metadata tracking, retrain locking, dynamic thresholds, ac_vNNN model naming, auto-promote logic. 372 lines."
+    },
+    "training/train.py": {
+      "type": "shim",
+      "imports": [],
+      "reads": [],
+      "writes": [],
+      "functions": [
+        "_select_text"
+      ],
+      "notes": "Deserialization shim. The pickled sklearn Pipeline's FunctionTransformer references training.train._select_text. This file exists solely for that import. 12 lines. Do not remove without testing all active model versions load correctly."
+    }
+  },
+  "artifacts": {
+    "model_registry.json": {
+      "path": "artifacts/model_registry.json",
+      "format": "JSON",
+      "critical": true,
+      "read_by": [
+        "core/model_registry.py",
+        "core/model_loader.py",
+        "pages/5_model_versions.py"
+      ],
+      "written_by": [
+        "core/model_registry.py"
+      ]
+    },
+    "feedback.csv": {
+      "path": "artifacts/feedback.csv",
+      "format": "CSV",
+      "critical": false,
+      "read_by": [
+        "core/feedback.py",
+        "core/training_data.py",
+        "pages/4_review_and_retrain.py",
+        "pages/2_diagnostics.py"
+      ],
+      "written_by": [
+        "core/feedback.py"
+      ]
+    },
+    "training_data.csv": {
+      "path": "artifacts/training_data.csv",
+      "format": "CSV",
+      "critical": false,
+      "read_by": [
+        "core/training_data.py",
+        "pages/4_review_and_retrain.py"
+      ],
+      "written_by": [
+        "core/training_data.py"
+      ]
+    },
+    "folder_name_map.json": {
+      "path": "artifacts/folder_name_map.json",
+      "format": "JSON",
+      "critical": false,
+      "read_by": [
+        "core/model_registry.py",
+        "core/label_map.py",
+        "pages/3_label_map_manager.py"
+      ],
+      "written_by": [
+        "pages/3_label_map_manager.py"
+      ]
+    },
+    "label_map.json": {
+      "path": "artifacts/label_map.json",
+      "format": "JSON",
+      "critical": false,
+      "read_by": [
+        "core/label_map.py",
+        "pages/3_label_map_manager.py"
+      ],
+      "written_by": [
+        "core/label_map.py"
+      ]
+    },
+    "folder_mapping.csv": {
+      "path": "artifacts/folder_mapping.csv",
+      "format": "CSV",
+      "critical": false,
+      "read_by": [
+        "core/model_registry.py",
+        "pages/3_label_map_manager.py"
+      ],
+      "written_by": [
+        "pages/3_label_map_manager.py"
+      ]
+    },
+    "taxonomy_audit_log.csv": {
+      "path": "artifacts/taxonomy_audit_log.csv",
+      "format": "CSV",
+      "critical": false,
+      "read_by": [
+        "pages/3_label_map_manager.py"
+      ],
+      "written_by": [
+        "pages/3_label_map_manager.py"
+      ]
+    },
+    "training_metadata.json": {
+      "path": "artifacts/training_metadata.json",
+      "format": "JSON",
+      "critical": false,
+      "read_by": [
+        "core/training_metadata.py",
+        "core/training_data.py",
+        "pages/4_review_and_retrain.py"
+      ],
+      "written_by": [
+        "core/training_metadata.py"
+      ],
+      "notes": "Retrain history, correction watermark, dynamic threshold, lock state, version counter."
+    }
+  },
+  "removed": {
+    "_note": "Files removed in v1.1 cleanup (19 Mar 2026). Total: 9 files, 685 lines.",
+    "src/training/train.py": {
+      "lines": 209,
+      "reason": "RESTORED in v1.2 as deserialization shim (12 lines, _select_text only). Original 209-line copy was removed in v1.1. Only _select_text() retained for pickled model compatibility."
+    },
+    "src/training/evaluation.py": {
+      "lines": 198,
+      "reason": "Byte-identical copy of ac_pipe/training/evaluation.py. Zero importers in src/."
+    },
+    "src/training/__init__.py": {
+      "lines": 0,
+      "reason": "RESTORED in v1.2 as empty init for deserialization shim package."
+    },
+    "core/similarity.py": {
+      "lines": 82,
+      "reason": "Zero importers. Functions (compute_tfidf_cosine_similarity, group_similar_docs, cluster_documents) never integrated into any page or core module."
+    },
+    "ac_pipe/ingestion/loader.py": {
+      "lines": 64,
+      "reason": "Legacy Excel ingestion (openpyxl sheet tab colours). Zero importers. Initial data prep complete."
+    },
+    "ac_pipe/ingestion/preprocessing.py": {
+      "lines": 30,
+      "reason": "Legacy text cleaning (spacy-based). Zero importers. Superseded by core/text_cleaning.py (nltk-based)."
+    },
+    "ac_pipe/ingestion/transform.py": {
+      "lines": 69,
+      "reason": "Legacy Excel-to-folder-mapping transform. Zero importers. Initial data prep complete."
+    },
+    "ac_pipe/ingestion/__init__.py": {
+      "lines": 0,
+      "reason": "Empty package init for removed ingestion/ directory."
+    },
+    "ac_pipe/utils/inference.py": {
+      "lines": 27,
+      "reason": "Minimal MLflow loader + predict wrapper. Zero importers. Superseded by core/prediction.py and core/model_loader.py."
+    }
+  }
+}
